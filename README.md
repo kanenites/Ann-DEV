@@ -1,6 +1,6 @@
-# Waste Management App 🌐
+# Food Donation Management App 🌐
 
-An application developed to streamline waste management processes for restaurants and contributors. This Flutter-based app offers an intuitive interface for restaurant owners to input waste data and for administrators to view waste reports. Utilizes Firebase for real-time data storage and authentication.
+An application developed to streamline food donation management processes for restaurants and contributors. This Flutter-based app offers an intuitive interface for restaurant owners to input waste data and for administrators to view waste reports. Utilizes Firebase for real-time data storage and authentication.
 
 ## Key Features 📋
 - Restaurant owners can log in, input waste data, and manage their waste records.
@@ -17,9 +17,6 @@ Flutter, Firebase Authentication, Cloud Firestore, Firebase Storage
 
 ## Contributions Welcome 📢
 We welcome contributions from developers, designers, and waste management enthusiasts. Whether you're interested in improving UI/UX, enhancing functionality, or optimizing code, your expertise is valued!
-
-## Contact 📧
-Feel free to reach out to our team at psuman1406@gmail.com for any inquiries or collaboration opportunities.
 
 ## How to Clone and Run 🛠️
 To clone and run this project, follow these steps:
@@ -58,10 +55,5 @@ To clone and run this project, follow these steps:
 9. Enjoy and make a positive impact on waste management processes!
 
 Feel free to modify and expand the instructions based on your project's specific setup and requirements. Additionally, consider including troubleshooting tips, known issues, or other helpful information for users who might be exploring your repository for the first time.
-
-![Screenshot_2023-08-29-08-47-27-85_a6324da239bd92f8d028252fc7e14cb8](https://github.com/suman1406/waste_manage/assets/119001618/3d4b389f-94af-450a-b284-32e8a73e1fd3)
-![Screenshot_2023-08-29-08-48-04-76_a6324da239bd92f8d028252fc7e14cb8](https://github.com/suman1406/waste_manage/assets/119001618/eadc0250-0ea2-4b1d-be7c-2eddfbb8a84f)
-![Screenshot_2023-08-29-08-48-38-68_a6324da239bd92f8d028252fc7e14cb8 (1)](https://github.com/suman1406/waste_manage/assets/119001618/c7e007d4-0367-470a-9998-1949dfcf4557)
-![Screenshot_2023-08-29-08-48-47-85_a6324da239bd92f8d028252fc7e14cb8 (1)](https://github.com/suman1406/waste_manage/assets/119001618/d3677192-0c22-4d2c-9f59-f8324433c820)
 
 
