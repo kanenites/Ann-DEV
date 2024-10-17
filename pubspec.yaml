@@ -1,0 +1,39 @@
+name: waste_manage
+description: A new Flutter project.
+
+publish_to: 'none' # Private package, not to be published to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.19.0 <4.0.0' # Updated to a broader SDK range
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  google_fonts: ^6.2.1
+  firebase_core: ^3.4.0
+  firebase_auth: ^5.2.0
+  cloud_firestore: ^5.4.0
+  firebase_storage: ^12.2.0
+  firebase_database: ^11.1.0
+  flutter_dotenv: ^5.1.0
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  
+
+  # Add your assets here, if needed:
+  assets:
+    - images/images.jpeg
+    - images/images2.jpg
+    - images/images3.jpg
+    - images/images4.jpeg
+  #   - images/another_image.jpeg
