@@ -4,6 +4,7 @@ An application developed to streamline food donation management processes for re
 
 ## Key Features 📋
 - Restaurant owners can log in, input waste data, and manage their waste records.
+- One can even contribute by donating money.
 - Administrators can access reports showcasing waste information from various restaurants.
 - Firebase integration ensures secure authentication and real-time data synchronization.
 
