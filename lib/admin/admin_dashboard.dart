@@ -2,9 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:waste_manage/admin/contributor_report.dart';
-import 'package:waste_manage/receiver/receiver_report_page.dart';
 import 'package:waste_manage/user_type.dart';
- // Import the ReceiverReportPage
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({Key? key}) : super(key: key);
@@ -15,6 +13,8 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   late List<ContributorData> _contributors = [];
+  List<ContributorData> _filteredContributors = [];  // For search and filter
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -23,18 +23,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Future<void> _loadContributors() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('contributors').get();
-    final contributorsData = snapshot.docs
-        .map((doc) => ContributorData.fromSnapshot(doc))
-        .toList();
+    final snapshot = await FirebaseFirestore.instance.collection('contributors').get();
+    final contributorsData = snapshot.docs.map((doc) => ContributorData.fromSnapshot(doc)).toList();
     setState(() {
       _contributors = contributorsData;
+      _filteredContributors = contributorsData;  // Initialize filtered list
+    });
+  }
+
+  void _filterContributors(String query) {
+    setState(() {
+      _filteredContributors = _contributors.where((contributor) {
+        return contributor.name.toLowerCase().contains(query.toLowerCase()) ||
+            contributor.email.toLowerCase().contains(query.toLowerCase());
+      }).toList();
     });
   }
 
   void _markAsDelivered(ContributorData contributor) async {
-    // Check if already marked as delivered
     final bookingsSnapshot = await FirebaseFirestore.instance
         .collection('bookings')
         .where('contributorEmail', isEqualTo: contributor.email)
@@ -48,28 +54,32 @@ class _AdminDashboardState extends State<AdminDashboard> {
       return;
     }
 
-    // Update Firestore to mark the food as delivered
-    FirebaseFirestore.instance
-        .collection('bookings')
-        .add({
-          'contributorEmail': contributor.email,
-          'solidFood': contributor.solidFood,
-          'liquidFood': contributor.liquidFood,
-          'foodDescription': contributor.foodDescription,
-          'status': 'delivered',
-          'timestamp': FieldValue.serverTimestamp(),
-          'contributorAddress': contributor.address,
-        })
-        .then((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Food marked as delivered!')),
-          );
-        })
-        .catchError((error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to mark as delivered: $error')),
-          );
-        });
+    FirebaseFirestore.instance.collection('bookings').add({
+      'contributorEmail': contributor.email,
+      'solidFood': contributor.solidFood,
+      'liquidFood': contributor.liquidFood,
+      'foodDescription': contributor.foodDescription,
+      'status': 'delivered',
+      'timestamp': FieldValue.serverTimestamp(),
+      'contributorAddress': contributor.address,
+    }).then((_) {
+      _sendNotification(contributor.email, 'Your food donation has been marked as delivered!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Food marked as delivered!')),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to mark as delivered: $error')),
+      );
+    });
+  }
+
+  void _sendNotification(String email, String message) {
+    FirebaseFirestore.instance.collection('notifications').add({
+      'email': email,
+      'message': message,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
   }
 
   Future<void> _signOut() async {
@@ -98,7 +108,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('images/images4.jpeg'), // Background image
+                image: AssetImage('images/images4.jpeg'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.3),
@@ -107,15 +117,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
             ),
           ),
-          ListView.builder(
-            itemCount: _contributors.length,
-            itemBuilder: (context, index) {
-              return ContributorCard(
-                contributor: _contributors[index],
-                onBook: null, // No booking needed in Admin Dashboard
-                onMarkAsDelivered: () => _markAsDelivered(_contributors[index]),
-              );
-            },
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    labelText: "Search Contributors",
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: _filterContributors,
+                ),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _filteredContributors.length,
+                  itemBuilder: (context, index) {
+                    return ContributorCard(
+                      contributor: _filteredContributors[index],
+                      onMarkAsDelivered: () => _markAsDelivered(_filteredContributors[index]),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -125,56 +151,46 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
 class ContributorCard extends StatelessWidget {
   final ContributorData contributor;
-  final VoidCallback? onBook;
   final VoidCallback? onMarkAsDelivered;
 
-  const ContributorCard({required this.contributor, this.onBook, this.onMarkAsDelivered, Key? key}) : super(key: key);
+  const ContributorCard({
+    required this.contributor,
+    this.onMarkAsDelivered,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white.withOpacity(0.4), // Set background color to white with opacity
-      elevation: 0, // Remove elevation to make it flat
+      color: Colors.white.withOpacity(0.4),
+      elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10), // Rounded corners if needed
+        borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
-        title: Text(
-          contributor.name,
-          style: const TextStyle(color: Colors.white),
-        ),
+        title: Text(contributor.name, style: const TextStyle(color: Colors.white)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Email: ${contributor.email}', style: const TextStyle(color: Colors.white)),
-            Text('Solid Food: ${contributor.solidFood?.toStringAsFixed(2) ?? 0.0} kg',
-                style: const TextStyle(color: Colors.white)),
-            Text('Liquid Food: ${contributor.liquidFood?.toStringAsFixed(2) ?? 0.0} liters',
-                style: const TextStyle(color: Colors.white)),
-            Text('Description: ${contributor.foodDescription}', style: const TextStyle(color: Colors.white)), // Add food description
-            Text('Contributor Address: ${contributor.address}', style: const TextStyle(color: Colors.white)), // Add contributor address
+            Text('Solid Food: ${contributor.solidFood?.toStringAsFixed(2) ?? 0.0} kg', style: const TextStyle(color: Colors.white)),
+            Text('Liquid Food: ${contributor.liquidFood?.toStringAsFixed(2) ?? 0.0} liters', style: const TextStyle(color: Colors.white)),
+            Text('Description: ${contributor.foodDescription}', style: const TextStyle(color: Colors.white)),
+            Text('Address: ${contributor.address}', style: const TextStyle(color: Colors.white)),
           ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ElevatedButton(
-              onPressed: onMarkAsDelivered,
-              child: Text('Mark as Delivered'),
-            ),
+            
             IconButton(
               icon: Icon(Icons.info, color: Colors.white),
               onPressed: () {
-                // Navigate to ReceiverReportPage
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ReceiverReportPage(
-                      solidFood: contributor.solidFood ?? 0.0,
-                      liquidFood: contributor.liquidFood ?? 0.0,
-                      foodDescription: contributor.foodDescription, address: '', receiverName: '', receiverEmail: '',
-                    ),
+                    builder: (context) => ContributorActivityLog(contributor: contributor),
                   ),
                 );
               },
@@ -186,49 +202,38 @@ class ContributorCard extends StatelessWidget {
   }
 }
 
-// ReceiverCard Class
-class ReceiverCard extends StatelessWidget {
-  final String receiverName;
-  final String receiverEmail;
-  final String receiverAddress;
-  final double solidFood;
-  final double liquidFood;
-  final String foodDescription;
+class ContributorActivityLog extends StatelessWidget {
+  final ContributorData contributor;
 
-  const ReceiverCard({
-    Key? key,
-    required this.receiverName,
-    required this.receiverEmail,
-    required this.receiverAddress,
-    required this.solidFood,
-    required this.liquidFood,
-    required this.foodDescription,
-  }) : super(key: key);
+  const ContributorActivityLog({Key? key, required this.contributor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white.withOpacity(0.4), // Set background color to white with opacity
-      elevation: 0, // Remove elevation to make it flat
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10), // Rounded corners if needed
-      ),
-      child: ListTile(
-        title: Text(
-          receiverName,
-          style: const TextStyle(color: Colors.white),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Email: $receiverEmail', style: const TextStyle(color: Colors.white)),
-            Text('Address: $receiverAddress', style: const TextStyle(color: Colors.white)),
-            Text('Solid Food: ${solidFood.toStringAsFixed(2)} kg', style: const TextStyle(color: Colors.white)),
-            Text('Liquid Food: ${liquidFood.toStringAsFixed(2)} liters', style: const TextStyle(color: Colors.white)),
-            Text('Description: $foodDescription', style: const TextStyle(color: Colors.white)),
-          ],
-        ),
+    return Scaffold(
+      appBar: AppBar(title: Text('${contributor.name} Activity Log')),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('bookings')
+            .where('contributorEmail', isEqualTo: contributor.email)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          var activityDocs = snapshot.data!.docs;
+          return ListView.builder(
+            itemCount: activityDocs.length,
+            itemBuilder: (context, index) {
+              var booking = activityDocs[index];
+              return ListTile(
+                title: Text('Solid Food: ${booking['solidFood']} kg'),
+                subtitle: Text('Liquid Food: ${booking['liquidFood']} kg'),
+                trailing: Text('Date: ${booking['timestamp'].toDate().toString()}'),
+              );
+            },
+          );
+        },
       ),
     );
   }
