@@ -14,12 +14,12 @@ Future<void> main() async {
     // Load environment variables
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: "AIzaSyBLvx5WAqev1_Lq4JigNuCcbyzmkBA8MxU",
-        authDomain: "rospl-6c351.firebaseapp.com",
-        projectId: "rospl-6c351",
-        storageBucket: "rospl-6c351.appspot.com",
-        messagingSenderId: "1072528636022",
-        appId: "1:1072528636022:web:2d06e6182baf992df64757"
+        apiKey: "add your api key",
+        authDomain: "add your domain",
+        projectId: "add yor project-id",
+        storageBucket: "add bucket id",
+        messagingSenderId: "add messaging id",
+        appId: "add app id"
       ),
     );
     runApp(const MyApp());
