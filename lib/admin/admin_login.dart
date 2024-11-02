@@ -2,28 +2,26 @@ import 'package:flutter/material.dart';
 import '../functions/auth_functions.dart';
 import 'admin_dashboard.dart';
 
-class AdminScreen extends StatefulWidget {
-  const AdminScreen({Key? key});
+class AdminSignupScreen extends StatefulWidget {
+  const AdminSignupScreen({Key? key});
 
   @override
-  State<AdminScreen> createState() => _AdminScreenState();
+  State<AdminSignupScreen> createState() => _AdminSignupScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen> {
+class _AdminSignupScreenState extends State<AdminSignupScreen> {
   final _formKey = GlobalKey<FormState>();
 
   String email = '';
   String password = '';
-  String restrauntName = '';
-  bool isLogin = true;
-
+  String restaurantName = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text(isLogin ? 'Admin Login' : 'Admin Signup'),
+        title: const Text('Admin Signup'),
       ),
       body: Form(
         key: _formKey,
@@ -33,25 +31,23 @@ class _AdminScreenState extends State<AdminScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (!isLogin)
-                  TextFormField(
-                    key: const ValueKey('restrauntName'),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter Name',
-                    ),
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Please Enter Name';
-                      } else {
-                        return null;
-                      }
-                    },
-                    onSaved: (value) {
-                      setState(() {
-                        restrauntName = value!;
-                      });
-                    },
+                TextFormField(
+                  key: const ValueKey('restaurantName'),
+                  decoration: const InputDecoration(
+                    hintText: 'Enter Restaurant Name',
                   ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter restaurant name';
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    setState(() {
+                      restaurantName = value!;
+                    });
+                  },
+                ),
                 TextFormField(
                   key: const ValueKey('email'),
                   decoration: const InputDecoration(
@@ -59,10 +55,9 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                   validator: (value) {
                     if (value!.isEmpty || !value.contains('@')) {
-                      return 'Please Enter a valid Email';
-                    } else {
-                      return null;
+                      return 'Please enter a valid email';
                     }
+                    return null;
                   },
                   onSaved: (value) {
                     setState(() {
@@ -78,10 +73,9 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                   validator: (value) {
                     if (value!.length < 6) {
-                      return 'Please Enter a Password of at least 6 characters';
-                    } else {
-                      return null;
+                      return 'Password must be at least 6 characters long';
                     }
+                    return null;
                   },
                   onSaved: (value) {
                     setState(() {
@@ -89,7 +83,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     });
                   },
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 Container(
                   height: 55,
                   width: double.infinity,
@@ -97,37 +91,19 @@ class _AdminScreenState extends State<AdminScreen> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
-                        if (isLogin) {
-                          final userCredential = await AdminAuthServices.signinAdmin(
-                              email, password, context);
-                          if (userCredential != null) {
-                            // Navigate to admin dashboard
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminDashboard()));
-                          }
-                        } else {
-                          final userCredential = await AdminAuthServices.signupAdmin(
-                              email, password, restrauntName, context);
-                          if (userCredential != null) {
-                            // Navigate to admin dashboard
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminDashboard()));
-                          }
+                        final userCredential = await AdminAuthServices.signupAdmin(
+                            email, password, restaurantName, context);
+                        if (userCredential != null) {
+                          // Navigate to admin dashboard
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AdminDashboard()),
+                          );
                         }
                       }
                     },
-                    child: Text(isLogin ? 'Login' : 'Signup'),
-                  ),
-                ),
-                SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      isLogin = !isLogin;
-                    });
-                  },
-                  child: Text(
-                    isLogin
-                        ? "Don't have an account? Signup"
-                        : "Already have an account? Login",
+                    child: const Text('Signup'),
                   ),
                 ),
               ],
